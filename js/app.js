@@ -18,11 +18,11 @@ var parseFeed = function(data, quantity) {
 
         var type = response.types[0]; // Get the first type in the array
 
-        if ((type == "restaurant") && (!isAppropriate(new Date().getTime()))) {
+        if (((type == "restaurant") || (type == "meal_takeaway")) && (!isAppropriate(new Date().getTime()))) {
             continue;
         }
 
-        if(type == "neighborhood") {
+        if ((type == "neighborhood") || (type == "lodging")) {
             continue;
         }
 
@@ -101,7 +101,7 @@ getLocation(function(position) {
 
             console.log("Data response was returned from Places API request!");
 
-            var menuItems = parseFeed(places_data, 4);
+            var menuItems = parseFeed(places_data, 25);
 
             StrapKit.Metrics.logEvent("/httpClient/success", menuItems);
 

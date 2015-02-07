@@ -1,7 +1,7 @@
 var StrapKit = require('strapkit');
 
-var app_id = "aS7DXLiJBx8BYp6y2";
-var key = "AIzaSyB1r0KL7OyreYCf5OeDxGfuc0D43rjaaAs";
+var app_id = "";
+var key = "";
 var radius = 1000;
 
 var parseFeed = function(data, quantity) {
@@ -20,8 +20,6 @@ var parseFeed = function(data, quantity) {
         var type = response.types[0]; // Get the first type in the array
 
         // Add to menu items array
-
-
         items.push({
             title: title,
             subtitle: type,
@@ -33,6 +31,21 @@ var parseFeed = function(data, quantity) {
     // Finally return whole array
     return items;
 };
+
+function isAppropriate(type, time) {
+
+    var time = ((new Date().getTime() / 1000) / 60) % 1440;
+    var breakfastStart = 300;
+    var breakfastEnd = 420;
+
+    var lunchStart = 600;
+    var lunchEnd = 720;
+
+    var dinnerStart = 960;
+    var dinnerEnd = 1080;
+
+    return ((time >= breakfastStart && time <= breakfastEnd) || (time >= lunchStart && time <= lunchEnd) || (time >= dinnerStart && time <= dinnerEnd));
+}
 
 
 function getLocation(cb) {

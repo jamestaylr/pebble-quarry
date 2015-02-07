@@ -1,0 +1,9 @@
+<?xml version='1.0' encoding='utf-8'?>
+<widget id="com.Quarry" version="0.0.1" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://strapkit.straphq.com/ns/1.0">
+    <name>Sample</name>
+    <description>
+        An intelligent location recommender created for Pebble in StrapKit.
+    </description>
+    <content src="index.js" />
+    <access origin="*" />
+</widget>

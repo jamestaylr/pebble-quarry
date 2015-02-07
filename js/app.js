@@ -19,6 +19,10 @@ var parseFeed = function(data, quantity) {
 
         var type = response.types[0]; // Get the first type in the array
 
+        if ((type == "restaurant") && (!isAppropriate(new Date().getTime()))) {
+            continue;
+        }
+
         // Add to menu items array
         items.push({
             title: title,
@@ -32,9 +36,9 @@ var parseFeed = function(data, quantity) {
     return items;
 };
 
-function isAppropriate(type, time) {
+function isAppropriate(time) {
 
-    var time = ((new Date().getTime() / 1000) / 60) % 1440;
+    var time = (((time) / 1000) / 60) % 1440;
     var breakfastStart = 300;
     var breakfastEnd = 420;
 
@@ -67,7 +71,6 @@ function getLocation(cb) {
             enableHighAccuracy: true
         });
     }
-
 }
 
 StrapKit.Metrics.Init(app_id);
@@ -111,7 +114,9 @@ getLocation(function(position) {
 
                         var detailPage = StrapKit.UI.Page();
 
-                        content = "Average rating: " + place_data.result.rating;
+                        if (place_data.result.rating) {
+                            content = "Average rating: " + place_data.result.rating;
+                        }
 
                         // Create the Card for detailed view
                         var detailCard = StrapKit.UI.Card({

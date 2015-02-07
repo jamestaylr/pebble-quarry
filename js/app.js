@@ -14,8 +14,7 @@ var parseFeed = function(data, quantity) {
         var response = responses[i];
 
         // Always upper case the description string
-        var title = response.name;
-        title = title.charAt(0).toUpperCase() + title.substring(1);
+        var title = formatString(response.name);
 
         var type = response.types[0]; // Get the first type in the array
 
@@ -23,10 +22,14 @@ var parseFeed = function(data, quantity) {
             continue;
         }
 
+        if(type == "neighborhood") {
+            continue;
+        }
+
         // Add to menu items array
         items.push({
             title: title,
-            subtitle: type,
+            subtitle: formatString(type),
             data: response
         });
 
@@ -35,6 +38,15 @@ var parseFeed = function(data, quantity) {
     // Finally return whole array
     return items;
 };
+
+
+function formatString(unformatted) {
+    // Capitalizes the first letting of the unformatted String
+    unformatted = unformatted.charAt(0).toUpperCase() + unformatted.substring(1);
+
+    // Removes underscores and returns the result
+    return unformatted.replace(/_/g, ' ');
+}
 
 function isAppropriate(time) {
 
@@ -78,6 +90,8 @@ StrapKit.Metrics.Init(app_id);
 getLocation(function(position) {
     var location = position[0] + ',' + position[1];
 
+    console.log("Getting places near location: " + location);
+
     // Make request using Google Places API
     StrapKit.HttpClient({
             url: 'https://maps.googleapis.com/maps/api/place/search/json?location=' + location + '&radius=' + radius + '&sensor=true&key=' + key,
@@ -114,9 +128,14 @@ getLocation(function(position) {
 
                         var detailPage = StrapKit.UI.Page();
 
+                        var content = "";
+
                         if (place_data.result.rating) {
                             content = "Average rating: " + place_data.result.rating;
                         }
+
+                        content += "\n";
+                        content += "Type: " + formatString(place.types[0]); // Referes to unspecific type in types array
 
                         // Create the Card for detailed view
                         var detailCard = StrapKit.UI.Card({

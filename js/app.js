@@ -1,7 +1,7 @@
 var StrapKit = require('strapkit');
 
-var app_id = "";
-var key = "";
+var app_id = "aS7DXLiJBx8BYp6y2";
+var key = "AIzaSyB1r0KL7OyreYCf5OeDxGfuc0D43rjaaAs";
 var radius = 1000;
 
 var parseFeed = function(data, quantity) {
@@ -20,6 +20,8 @@ var parseFeed = function(data, quantity) {
         var type = response.types[0]; // Get the first type in the array
 
         // Add to menu items array
+
+
         items.push({
             title: title,
             subtitle: type,
@@ -58,7 +60,6 @@ function getLocation(cb) {
 StrapKit.Metrics.Init(app_id);
 
 getLocation(function(position) {
-
     var location = position[0] + ',' + position[1];
 
     // Make request using Google Places API
@@ -66,11 +67,11 @@ getLocation(function(position) {
             url: 'https://maps.googleapis.com/maps/api/place/search/json?location=' + location + '&radius=' + radius + '&sensor=true&key=' + key,
             type: 'json'
         },
-        function(data) {
+        function(places_data) {
 
             console.log("Data response was returned from Places API request!");
 
-            var menuItems = parseFeed(data, 6);
+            var menuItems = parseFeed(places_data, 4);
 
             StrapKit.Metrics.logEvent("/httpClient/success", menuItems);
 
@@ -83,21 +84,39 @@ getLocation(function(position) {
 
             // Add an action for SELECT
             resultsMenu.setOnItemClick(function(e) {
-                var detailPage = StrapKit.UI.Page();
 
-                var location = e.item.data;
+                var place = e.item.data;
 
-                var detailPage = StrapKit.UI.Page();
-                // Create the Card for detailed view
-                var detailCard = StrapKit.UI.Card({
-                    subtitle: e.item.title,
-                    body: ""
-                });
+                // Query the Places API to get details about the specific place
+                StrapKit.HttpClient({
+                        url: 'https://maps.googleapis.com/maps/api/place/details/json?placeid=' + place.place_id + '&key=' + key,
+                        type: 'json'
+                    },
+                    function(place_data) {
 
-                detailPage.addView(detailCard);
-                detailPage.show();
+                        console.log("Got detailed data about the place.");
 
-                StrapKit.Metrics.logEvent("show/detailPage", e.item.data);
+                        var detailPage = StrapKit.UI.Page();
+
+                        content = "Average rating: " + place_data.result.rating;
+
+                        // Create the Card for detailed view
+                        var detailCard = StrapKit.UI.Card({
+                            title: e.item.title,
+                            body: content
+                        });
+
+                        detailPage.addView(detailCard);
+                        detailPage.show();
+
+                        StrapKit.Metrics.logEvent("show/detailPage", e.item.data);
+
+                    },
+                    function(error) {
+                        console.log(error);
+                    }
+                );
+
             });
 
             // Show the Menu, hide the splash

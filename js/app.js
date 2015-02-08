@@ -1,7 +1,7 @@
 var StrapKit = require('strapkit');
 
-var app_id = "aS7DXLiJBx8BYp6y2";
-var key = "AIzaSyB1r0KL7OyreYCf5OeDxGfuc0D43rjaaAs";
+var app_id = "";
+var key = "";
 var radius = 1000;
 var perferences;
 
@@ -240,8 +240,7 @@ function createConfig(key, callback) {
 
     var likes = []; // Included items with higher pecedence
     var dislikes = []; // Included items with lower pecedence
-    var exclude = []; // Items omited from all results
-    propogationExclusionList(exclude);
+    var exclude = propogationExclusionList(); // Items omited from all results
 
     var setupSplashPage = StrapKit.UI.Page();
     var setupSplashCard = StrapKit.UI.Card({
@@ -292,7 +291,9 @@ function createConfig(key, callback) {
                             console.log("The answer to the previous question was " + state);
 
                             if (state) {
-                                
+                                dislikes.append("taxi_stand");
+                                dislikes.append("train_station");
+                                dislikes.append("subway_station");
                             }
 
                             callback();
@@ -344,7 +345,44 @@ function createSetupPage(title, callback) {
 
 }
 
-function propogateExclusionList(list)
+function propogateExclusionList()
 {
+    list = [];
+
+    list.append("synagogue");
+    list.append("locksmith");
+    list.append("rv_park");
+    list.append("roofing_contractor");
+    list.append("real_estate_agency");
+    list.append("post_office");
+    list.append("airport");
+    list.append("atm");
+    list.append("bank");
+    list.append("car_dealer");
+    list.append("car_rental");
+    list.append("car_wash");
+    list.append("cemetery");
+    list.append("church");
+    list.append("city_hall");
+    list.append("dentist");
+    list.append("doctor");
+    list.append("fire_station");
+    list.append("funeral_home");
+    list.append("furniture_store");
+    list.append("hardware_store");
+    list.append("hospital");
+    list.append("insurance_agency");
+    list.append("lawyer");
+    list.append("local_government_office");
+    list.append("mosque");
+    list.append("moving-company");
+    list.append("painter");
+    list.append("place_of_worship");
+    list.append("plumber");
+    list.append("storage");
+    list.append("physiotherapist");
+    list.append("travel_agency");
+    list.append("police");
+
     return list;
 }

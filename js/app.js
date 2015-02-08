@@ -10,7 +10,7 @@ var likes; // Included items with higher pecedence
 var dislikes; // Included items with lower pecedence
 var exclude; // Items omited from all results
 
-var save_key = 2;
+var saveKey = 3;
 
 var parseFeed = function(data) {
     var items = [];
@@ -216,6 +216,8 @@ getLocation(function(position) {
                 resultsPage.addView(resultsMenu);
                 resultsPage.show();
 
+                atLocation(location);
+
                 StrapKit.Metrics.logEvent("show/resultsPage");
             },
             function(error) {
@@ -246,27 +248,27 @@ function checkRenderError(jsonResponse) {
 
 function setupApplication(callback) {
 
-    if (keyContainsData(save_key)) {
-        perferences = getConfig(save_key);
+    if (keyContainsData(saveKey)) {
+        perferences = getConfig(saveKey);
         callback();
     } else {
-        perferences = createConfig(save_key, function() {
+        perferences = createConfig(saveKey, function() {
             callback();
         });
     }
 }
 
-function keyContainsData(save_key) {
+function keyContainsData(saveKey) {
 
     // Return true if the content of data stored in the key is greater than 0
-    return localStorage.getItem(save_key) != null;
+    return localStorage.getItem(saveKey) != null;
 }
 
-function getConfig(save_key) {
+function getConfig(saveKey) {
     // Prints what content is stored in a given key
-    console.log(localStorage.getItem(save_key) + " is stored in key " + save_key);
+    console.log(localStorage.getItem(saveKey) + " is stored in key " + saveKey);
 
-    var arrays = localStorage.getItem(save_key);
+    var arrays = localStorage.getItem(saveKey);
 
     likes = arrays[0];
     dislikes = arrays[1];
@@ -274,7 +276,7 @@ function getConfig(save_key) {
 
 }
 
-function createConfig(save_key, callback) {
+function createConfig(saveKey, callback) {
     console.log("Creating the configuration file!");
 
     likes = []; // Included items with higher pecedence
@@ -365,9 +367,9 @@ function createConfig(save_key, callback) {
                                 console.log("The setup process has ended. Likes has " + likes.length + " elements, dislikes has " + dislikes.length + " elements and exclude has " + exclude.length + " elements.");
                                 
                                 // Show the ending page for 5 seconds before going to the main view
-                                var saved_data = [likes, dislikes];
+                                var savedData = [likes, dislikes];
                                 setTimeout(function(){
-                                    localStorage.setItem(save_key, saved_data);
+                                    localStorage.setItem(saveKey, savedData);
                                     callback();
                                 }, 5000);
                             });
@@ -458,6 +460,7 @@ propogateExclusionList = function() {
     list.push("police");
     list.push("laundry");
     list.push("veterinary_care");
+    list.push("school");
 
     // possible excusion
     list.push("store");
@@ -474,7 +477,7 @@ function atLocation(location) {
             type: 'json'
         },
         function(places_data) {
-            place = places_data.result[0];
+            place = places_data.results[0];
             places_traveled.push[place];
 
         },

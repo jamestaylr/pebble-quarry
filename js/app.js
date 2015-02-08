@@ -13,25 +13,30 @@ var parseFeed = function(data, quantity) {
 
         var response = responses[i];
 
-        // Always upper case the description string
-        var title = formatString(response.name);
+        try {
+            // Always upper case the description string
+            var title = formatString(response.name);
 
-        var type = response.types[0]; // Get the first type in the array
 
-        if (((type == "restaurant") || (type == "meal_takeaway")) && (!isAppropriate(new Date().getTime()))) {
-            continue;
+            var type = response.types[0]; // Get the first type in the array
+
+            if (((type == "restaurant") || (type == "meal_takeaway")) && (!isAppropriate(new Date().getTime()))) {
+                continue;
+            }
+
+            if ((type == "neighborhood") || (type == "lodging")) {
+                continue;
+            }
+
+            // Add to menu items array
+            items.push({
+                title: title,
+                subtitle: formatString(type),
+                data: response
+            });
+        } catch (error) {
+            console.error(error);
         }
-
-        if ((type == "neighborhood") || (type == "lodging")) {
-            continue;
-        }
-
-        // Add to menu items array
-        items.push({
-            title: title,
-            subtitle: formatString(type),
-            data: response
-        });
 
     }
 
@@ -98,8 +103,11 @@ getLocation(function(position) {
             type: 'json'
         },
         function(places_data) {
+            checkRenderError(places_data);
 
             console.log("Data response was returned from Places API request!");
+
+            console.log(JSON.stringify(places_data));
 
             var menuItems = parseFeed(places_data, 25);
 
@@ -115,6 +123,7 @@ getLocation(function(position) {
             // Add an action for SELECT
             resultsMenu.setOnItemClick(function(e) {
 
+
                 var place = e.item.data;
 
                 // Query the Places API to get details about the specific place
@@ -123,6 +132,7 @@ getLocation(function(position) {
                         type: 'json'
                     },
                     function(place_data) {
+                        checkRenderError(place_data);
 
                         console.log("Got detailed data about the place.");
 
@@ -167,3 +177,19 @@ getLocation(function(position) {
         }
     );
 });
+
+function checkRenderError(jsonResponse) {
+    if (jsonResponse.hasOwnProperty('error_message')) {
+
+        var errorPage = StrapKit.UI.Page();
+        var errorCard = StrapKit.UI.Card({
+            title: "Something went wrong!",
+            body: jsonResponse.error_message
+        });
+
+        errorPage.addView(errorCard);
+        errorPage.show();
+
+        console.error("Application crashed beause " + jsonResponse.error_message);
+    }
+}

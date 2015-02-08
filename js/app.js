@@ -2,7 +2,7 @@ var StrapKit = require('strapkit');
 
 var app_id = "";
 var key = "";
-var radius = 1000;
+var radius = 1500;
 var perferences;
 var places_traveled = []; // Stores places the user has traveled to; influences location feed
 
@@ -10,16 +10,49 @@ var likes; // Included items with higher pecedence
 var dislikes; // Included items with lower pecedence
 var exclude; // Items omited from all results
 
-var parseFeed = function(data, quantity) {
+var save_key = 2;
+
+var parseFeed = function(data) {
     var items = [];
 
     var responses = data.results;
 
-    for (var i = 0; i < quantity; i++) {
+    for (var i = 0; i < responses.length; i++) {
 
         var response = responses[i];
 
-        console.log(JSON.stringify(response));
+        var shouldOmit = false;
+
+        for (var j = 0;  j < exclude.length; j++) {
+            var currentExclusion = exclude[j];
+
+            for (var k = 0; k < response.types.length; k++) {
+                var currentResponseType = response.types[k];
+
+                if (currentExclusion == currentResponseType) {
+                    shouldOmit = true;
+
+                }
+            }
+        }
+
+        for (var j = 0;  j < dislikes.length; j++) {
+            var currentDislike = dislikes[j];
+
+            for (var k = 0; k < response.types.length; k++) {
+                var currentResponseType = response.types[k];
+
+                if (currentDislike == currentResponseType) {
+                    shouldOmit = true;
+
+                }
+            }
+        }
+
+        if (shouldOmit) {
+            console.log("Omitting " + response.name + " from the results because it is a " + response.types[0] + ".");
+            continue;
+        }
 
         try {
             // Always upper case the description string
@@ -120,9 +153,7 @@ getLocation(function(position) {
 
                 console.log("Data response was returned from Places API request!");
 
-                console.log(JSON.stringify(places_data));
-
-                var menuItems = parseFeed(places_data, 25);
+                var menuItems = parseFeed(places_data);
 
                 StrapKit.Metrics.logEvent("/httpClient/success", menuItems);
 
@@ -214,32 +245,36 @@ function checkRenderError(jsonResponse) {
 }
 
 function setupApplication(callback) {
-    var key = 2;
 
-    if (keyContainsData(key)) {
-        perferences = getConfig(key);
+    if (keyContainsData(save_key)) {
+        perferences = getConfig(save_key);
         callback();
     } else {
-        perferences = createConfig(key, function() {
+        perferences = createConfig(save_key, function() {
             callback();
         });
     }
 }
 
-function keyContainsData(key) {
-    var content = getConfig(key);
+function keyContainsData(save_key) {
 
     // Return true if the content of data stored in the key is greater than 0
-    return content != null;
+    return localStorage.getItem(save_key) != null;
 }
 
-function getConfig(key) {
+function getConfig(save_key) {
     // Prints what content is stored in a given key
-    console.log(localStorage.getItem(key) + " is stored in key " + key);
-    return localStorage.getItem(key);
+    console.log(localStorage.getItem(save_key) + " is stored in key " + save_key);
+
+    var arrays = localStorage.getItem(save_key);
+
+    likes = arrays[0];
+    dislikes = arrays[1];
+    exclude = propogateExclusionList();
+
 }
 
-function createConfig(key, callback) {
+function createConfig(save_key, callback) {
     console.log("Creating the configuration file!");
 
     likes = []; // Included items with higher pecedence
@@ -326,9 +361,15 @@ function createConfig(key, callback) {
 
                                 setupEndPage.addView(setupEndCard);
                                 setupEndPage.show();
+
+                                console.log("The setup process has ended. Likes has " + likes.length + " elements, dislikes has " + dislikes.length + " elements and exclude has " + exclude.length + " elements.");
                                 
                                 // Show the ending page for 5 seconds before going to the main view
-                                setTimeout(function(){ callback(); }, 5000);
+                                var saved_data = [likes, dislikes];
+                                setTimeout(function(){
+                                    localStorage.setItem(save_key, saved_data);
+                                    callback();
+                                }, 5000);
                             });
                         });
                     });
@@ -416,6 +457,10 @@ propogateExclusionList = function() {
     list.push("travel_agency");
     list.push("police");
     list.push("laundry");
+    list.push("veterinary_care");
+
+    // possible excusion
+    list.push("store");
 
     return list;
 }

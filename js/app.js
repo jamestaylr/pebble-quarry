@@ -1,8 +1,9 @@
 var StrapKit = require('strapkit');
 
-var app_id = "";
-var key = "";
+var app_id = "aS7DXLiJBx8BYp6y2";
+var key = "AIzaSyB1r0KL7OyreYCf5OeDxGfuc0D43rjaaAs";
 var radius = 1000;
+var perferences;
 
 var parseFeed = function(data, quantity) {
     var items = [];
@@ -12,6 +13,8 @@ var parseFeed = function(data, quantity) {
     for (var i = 0; i < quantity; i++) {
 
         var response = responses[i];
+
+        console.log(JSON.stringify(response));
 
         try {
             // Always upper case the description string
@@ -97,13 +100,18 @@ getLocation(function(position) {
 
     console.log("Getting places near location: " + location);
 
+    setupApplication(function(){
+
+
     // Make request using Google Places API
     StrapKit.HttpClient({
             url: 'https://maps.googleapis.com/maps/api/place/search/json?location=' + location + '&radius=' + radius + '&sensor=true&key=' + key,
             type: 'json'
         },
         function(places_data) {
-            checkRenderError(places_data);
+            if(checkRenderError(places_data)) {
+                return;
+            }
 
             console.log("Data response was returned from Places API request!");
 
@@ -132,7 +140,9 @@ getLocation(function(position) {
                         type: 'json'
                     },
                     function(place_data) {
-                        checkRenderError(place_data);
+                        if(checkRenderError(place_data)) {
+                            return;
+                        }
 
                         console.log("Got detailed data about the place.");
 
@@ -176,6 +186,7 @@ getLocation(function(position) {
             console.log(error);
         }
     );
+    });
 });
 
 function checkRenderError(jsonResponse) {
@@ -191,5 +202,91 @@ function checkRenderError(jsonResponse) {
         errorPage.show();
 
         console.error("Application crashed beause " + jsonResponse.error_message);
+        return true;
     }
+
+    return false;
+}
+
+function setupApplication(callback) {
+    var key = 2;
+
+    if (keyContainsData(key)) {
+        perferences = getConfig(key);
+        callback();
+    } else {
+        perferences = createConfig(key, function(){
+            callback();
+        });
+    }
+}
+
+function keyContainsData(key) {
+    var content = getConfig(key);
+
+    // Return true if the content of data stored in the key is greater than 0
+    return content != null;
+}
+
+function getConfig(key) {
+    // Prints what content is stored in a given key
+    console.log(localStorage.getItem(key) + " is stored in key " + key);
+    return localStorage.getItem(key);
+}
+
+function createConfig(key, callback) {
+    console.log("Creating the configuration file!");
+
+
+    var perf = {
+        likes: ''
+    };
+
+    createSetupPage("Do you like pi?", function(state) {
+        console.log("The answer to the previous question was " + state);
+        createSetupPage("How about restaurants?", function(state) {
+            console.log("The answer to the previous question was " + state);
+            callback();
+        });
+    });
+
+    
+
+}
+
+function createSetupPage(title, callback) {
+    var setupPage = StrapKit.UI.Page();
+
+    var items = [];
+
+    items.push({
+        title: title,
+    });
+
+    items.push({
+        title: "Yes"
+    });
+    items.push({
+        title: "No"
+    });
+
+    /// Construct Menu to show to user
+    var setupMenu = StrapKit.UI.ListView({
+        items: items
+    });
+
+    setupPage.addView(setupMenu);
+    setupPage.show();
+
+    setupMenu.setOnItemClick(function(e) {
+
+        // if the length of the title is not greater than 4, it must be either "Yes" or "No"
+        if (!(e.item.title.length > 4)) {
+            var state = (e.item.title == "Yes") ? true : false;
+            callback(state);
+        }
+        
+    });
+
+
 }

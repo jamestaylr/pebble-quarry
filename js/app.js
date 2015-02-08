@@ -240,7 +240,7 @@ function createConfig(key, callback) {
 
     var likes = []; // Included items with higher pecedence
     var dislikes = []; // Included items with lower pecedence
-    var exclude = propogationExclusionList(); // Items omited from all results
+    var exclude = propogateExclusionList(); // Items omited from all results
 
     var setupSplashPage = StrapKit.UI.Page();
     var setupSplashCard = StrapKit.UI.Card({
@@ -249,68 +249,68 @@ function createConfig(key, callback) {
     });
 
     setupSplashCard.setOnClick(function(e) {
-        createSetupPage("Go out to eat often?", function(state) {
+        createSetupPage("Eat out often?", function(state) {
             console.log("The answer to the previous question was " + state);
 
             if (state) {
-                likes.append("restaurant");
-                likes.append("food");
-                likes.append("meal_takeaway");
-                likes.append("meal_delivery");
+                likes.push("restaurant");
+                likes.push("food");
+                likes.push("meal_takeaway");
+                likes.push("meal_delivery");
             }
 
-            createSetupPage("Enjoy fashion / beauty services?", function(state) {
+            createSetupPage("Enjoy fashion?", function(state) {
                 console.log("The answer to the previous question was " + state);
 
                 if (state) {
-                    likes.append("beauty_salon");
-                    likes.append("clothing_store");
-                    likes.append("hair_care");
-                    likes.append("jewelry_store");
-                    likes.append("spa");
+                    likes.push("beauty_salon");
+                    likes.push("clothing_store");
+                    likes.push("hair_care");
+                    likes.push("jewelry_store");
+                    likes.push("spa");
                 } else {
-                    dislikes.append("beauty_salon");
-                    dislikes.append("clothing_store");
-                    dislikes.append("hair_care");
-                    dislikes.append("jewelry_store");
-                    dislikes.append("spa");
+                    dislikes.push("beauty_salon");
+                    dislikes.push("clothing_store");
+                    dislikes.push("hair_care");
+                    dislikes.push("jewelry_store");
+                    dislikes.push("spa");
                 }
 
                 createSetupPage("Like parks?", function(state) {
                     console.log("The answer to the previous question was " + state);
 
                     if (state) {
-                        likes.append("park");
+                        likes.push("park");
                     } else {
-                        dislikes.append("park");
+                        dislikes.push("park");
                     }
 
                     createSetupPage("Enjoy learning?", function(state) {
                         console.log("The answer to the previous question was " + state);
 
                         if (state) {
-                            likes.append("library");
-                            likes.append("university");
-                            likes.append("book_store");
+                            likes.push("library");
+                            likes.push("university");
+                            likes.push("book_store");
                         } else {
-                            dislikes.append("library");
-                            dislikes.append("university");
+                            dislikes.push("library");
+                            dislikes.push("university");
                         }
 
                         createSetupPage("Drink coffee?", function(state) {
                             console.log("The answer to the previous question was " + state);
 
                             if (state) {
-                                likes.append("cafe");
+                                likes.push("cafe");
                             }
 
-                            createSetupPage("Familar with this area?", function(state) {
+                            createSetupPage("Familiar to area?", function(state) {
                                 console.log("The answer to the previous question was " + state);
 
                                 if (state) {
-                                    dislikes.append("taxi_stand");
-                                    dislikes.append("train_station");
-                                    dislikes.append("subway_station");
+                                    dislikes.push("taxi_stand");
+                                    dislikes.push("train_station");
+                                    dislikes.push("subway_station");
                                 }
 
                                 callback();
@@ -363,44 +363,44 @@ function createSetupPage(title, callback) {
 
 }
 
-function propogateExclusionList() {
-    list = [];
+propogateExclusionList = function() {
+    var list = [];
 
-    list.append("synagogue");
-    list.append("locksmith");
-    list.append("rv_park");
-    list.append("roofing_contractor");
-    list.append("real_estate_agency");
-    list.append("post_office");
-    list.append("airport");
-    list.append("atm");
-    list.append("bank");
-    list.append("car_dealer");
-    list.append("car_rental");
-    list.append("car_wash");
-    list.append("cemetery");
-    list.append("church");
-    list.append("city_hall");
-    list.append("dentist");
-    list.append("doctor");
-    list.append("fire_station");
-    list.append("funeral_home");
-    list.append("furniture_store");
-    list.append("hardware_store");
-    list.append("hospital");
-    list.append("insurance_agency");
-    list.append("lawyer");
-    list.append("local_government_office");
-    list.append("mosque");
-    list.append("moving-company");
-    list.append("painter");
-    list.append("place_of_worship");
-    list.append("plumber");
-    list.append("storage");
-    list.append("physiotherapist");
-    list.append("travel_agency");
-    list.append("police");
-    list.append("laundry");
+    list.push("synagogue");
+    list.push("locksmith");
+    list.push("rv_park");
+    list.push("roofing_contractor");
+    list.push("real_estate_agency");
+    list.push("post_office");
+    list.push("airport");
+    list.push("atm");
+    list.push("bank");
+    list.push("car_dealer");
+    list.push("car_rental");
+    list.push("car_wash");
+    list.push("cemetery");
+    list.push("church");
+    list.push("city_hall");
+    list.push("dentist");
+    list.push("doctor");
+    list.push("fire_station");
+    list.push("funeral_home");
+    list.push("furniture_store");
+    list.push("hardware_store");
+    list.push("hospital");
+    list.push("insurance_agency");
+    list.push("lawyer");
+    list.push("local_government_office");
+    list.push("mosque");
+    list.push("moving-company");
+    list.push("painter");
+    list.push("place_of_worship");
+    list.push("plumber");
+    list.push("storage");
+    list.push("physiotherapist");
+    list.push("travel_agency");
+    list.push("police");
+    list.push("laundry");
 
     return list;
 }

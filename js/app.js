@@ -4,7 +4,11 @@ var app_id = "";
 var key = "";
 var radius = 1000;
 var perferences;
-var places_traveled = [];
+var places_traveled = []; // Stores places the user has traveled to; influences location feed
+
+var likes; // Included items with higher pecedence
+var dislikes; // Included items with lower pecedence
+var exclude; // Items omited from all results
 
 var parseFeed = function(data, quantity) {
     var items = [];
@@ -238,10 +242,9 @@ function getConfig(key) {
 function createConfig(key, callback) {
     console.log("Creating the configuration file!");
 
-
-    var likes = []; // Included items with higher pecedence
-    var dislikes = []; // Included items with lower pecedence
-    var exclude = propogateExclusionList(); // Items omited from all results
+    likes = []; // Included items with higher pecedence
+    dislikes = []; // Included items with lower pecedence
+    exclude = propogateExclusionList(); // Items omited from all results
 
     var setupSplashPage = StrapKit.UI.Page();
     var setupSplashCard = StrapKit.UI.Card({

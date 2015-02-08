@@ -4,6 +4,7 @@ var app_id = "";
 var key = "";
 var radius = 1000;
 var perferences;
+var places_traveled = [];
 
 var parseFeed = function(data, quantity) {
     var items = [];
@@ -313,7 +314,18 @@ function createConfig(key, callback) {
                                     dislikes.push("subway_station");
                                 }
 
-                                callback();
+                                // Creates the ending page
+                                var setupEndPage = StrapKit.UI.Page();
+                                var setupEndCard = StrapKit.UI.Card({
+                                    title: "Thanks!",
+                                    body: "Press and hold the back button. We won't ask you to go through the setup again."
+                                });
+
+                                setupEndPage.addView(setupEndCard);
+                                setupEndPage.show();
+                                
+                                // Show the ending page for 5 seconds before going to the main view
+                                setTimeout(function(){ callback(); }, 5000);
                             });
                         });
                     });
@@ -403,4 +415,23 @@ propogateExclusionList = function() {
     list.push("laundry");
 
     return list;
+}
+
+
+function atLocation(location) {
+    var close_radius = 50;
+
+    StrapKit.HttpClient({
+            url: 'https://maps.googleapis.com/maps/api/place/search/json?location=' + location + '&radius=' + close_radius + '&sensor=true&key=' + key,
+            type: 'json'
+        },
+        function(places_data) {
+            place = places_data.result[0];
+            places_traveled.push[place];
+
+        },
+        function(error) {
+            console.log(error);
+        }
+    );
 }

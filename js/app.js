@@ -100,92 +100,92 @@ getLocation(function(position) {
 
     console.log("Getting places near location: " + location);
 
-    setupApplication(function(){
+    setupApplication(function() {
 
 
-    // Make request using Google Places API
-    StrapKit.HttpClient({
-            url: 'https://maps.googleapis.com/maps/api/place/search/json?location=' + location + '&radius=' + radius + '&sensor=true&key=' + key,
-            type: 'json'
-        },
-        function(places_data) {
-            if(checkRenderError(places_data)) {
-                return;
+        // Make request using Google Places API
+        StrapKit.HttpClient({
+                url: 'https://maps.googleapis.com/maps/api/place/search/json?location=' + location + '&radius=' + radius + '&sensor=true&key=' + key,
+                type: 'json'
+            },
+            function(places_data) {
+                if (checkRenderError(places_data)) {
+                    return;
+                }
+
+                console.log("Data response was returned from Places API request!");
+
+                console.log(JSON.stringify(places_data));
+
+                var menuItems = parseFeed(places_data, 25);
+
+                StrapKit.Metrics.logEvent("/httpClient/success", menuItems);
+
+                var resultsPage = StrapKit.UI.Page();
+
+                // Construct Menu to show to user
+                var resultsMenu = StrapKit.UI.ListView({
+                    items: menuItems
+                });
+
+                // Add an action for SELECT
+                resultsMenu.setOnItemClick(function(e) {
+
+
+                    var place = e.item.data;
+
+                    // Query the Places API to get details about the specific place
+                    StrapKit.HttpClient({
+                            url: 'https://maps.googleapis.com/maps/api/place/details/json?placeid=' + place.place_id + '&key=' + key,
+                            type: 'json'
+                        },
+                        function(place_data) {
+                            if (checkRenderError(place_data)) {
+                                return;
+                            }
+
+                            console.log("Got detailed data about the place.");
+
+                            var detailPage = StrapKit.UI.Page();
+
+                            var content = "";
+
+                            if (place_data.result.rating) {
+                                content = "Average rating: " + place_data.result.rating;
+                            }
+
+                            content += "\n";
+                            content += "Type: " + formatString(place.types[0]); // Referes to unspecific type in types array
+
+                            // Create the Card for detailed view
+                            var detailCard = StrapKit.UI.Card({
+                                title: e.item.title,
+                                body: content
+                            });
+
+                            detailPage.addView(detailCard);
+                            detailPage.show();
+
+                            StrapKit.Metrics.logEvent("show/detailPage", e.item.data);
+
+                        },
+                        function(error) {
+                            console.log(error);
+                        }
+                    );
+
+                });
+
+                // Show the Menu, hide the splash
+                resultsPage.addView(resultsMenu);
+                resultsPage.show();
+
+                StrapKit.Metrics.logEvent("show/resultsPage");
+            },
+            function(error) {
+                console.log(error);
             }
-
-            console.log("Data response was returned from Places API request!");
-
-            console.log(JSON.stringify(places_data));
-
-            var menuItems = parseFeed(places_data, 25);
-
-            StrapKit.Metrics.logEvent("/httpClient/success", menuItems);
-
-            var resultsPage = StrapKit.UI.Page();
-
-            // Construct Menu to show to user
-            var resultsMenu = StrapKit.UI.ListView({
-                items: menuItems
-            });
-
-            // Add an action for SELECT
-            resultsMenu.setOnItemClick(function(e) {
-
-
-                var place = e.item.data;
-
-                // Query the Places API to get details about the specific place
-                StrapKit.HttpClient({
-                        url: 'https://maps.googleapis.com/maps/api/place/details/json?placeid=' + place.place_id + '&key=' + key,
-                        type: 'json'
-                    },
-                    function(place_data) {
-                        if(checkRenderError(place_data)) {
-                            return;
-                        }
-
-                        console.log("Got detailed data about the place.");
-
-                        var detailPage = StrapKit.UI.Page();
-
-                        var content = "";
-
-                        if (place_data.result.rating) {
-                            content = "Average rating: " + place_data.result.rating;
-                        }
-
-                        content += "\n";
-                        content += "Type: " + formatString(place.types[0]); // Referes to unspecific type in types array
-
-                        // Create the Card for detailed view
-                        var detailCard = StrapKit.UI.Card({
-                            title: e.item.title,
-                            body: content
-                        });
-
-                        detailPage.addView(detailCard);
-                        detailPage.show();
-
-                        StrapKit.Metrics.logEvent("show/detailPage", e.item.data);
-
-                    },
-                    function(error) {
-                        console.log(error);
-                    }
-                );
-
-            });
-
-            // Show the Menu, hide the splash
-            resultsPage.addView(resultsMenu);
-            resultsPage.show();
-
-            StrapKit.Metrics.logEvent("show/resultsPage");
-        },
-        function(error) {
-            console.log(error);
-        }
-    );
+        );
     });
 });
 
@@ -215,7 +215,7 @@ function setupApplication(callback) {
         perferences = getConfig(key);
         callback();
     } else {
-        perferences = createConfig(key, function(){
+        perferences = createConfig(key, function() {
             callback();
         });
     }
@@ -238,19 +238,73 @@ function createConfig(key, callback) {
     console.log("Creating the configuration file!");
 
 
-    var perf = {
-        likes: ''
-    };
+    var likes = []; // Included items with higher pecedence
+    var dislikes = []; // Included items with lower pecedence
+    var exclude = []; // Items omited from all results
+    propogationExclusionList(exclude);
 
-    createSetupPage("Do you like pi?", function(state) {
-        console.log("The answer to the previous question was " + state);
-        createSetupPage("How about restaurants?", function(state) {
+    var setupSplashPage = StrapKit.UI.Page();
+    var setupSplashCard = StrapKit.UI.Card({
+        title: "Do you?",
+        body: "Let's get to know each other. Answer the following so we can best determine your perferences."
+    });
+
+    setupSplashCard.setOnClick(function(e) {
+        createSetupPage("Go out to eat often?", function(state) {
             console.log("The answer to the previous question was " + state);
-            callback();
+
+            if (state) {
+                likes.append("restaurant");
+                likes.append("food");
+                likes.append("meal_takeaway");
+                likes.append("meal_delivery");
+            }
+
+            createSetupPage("Like parks?", function(state) {
+                console.log("The answer to the previous question was " + state);
+
+                if (state) {
+                    likes.append("park");
+                } else {
+                    dislikes.append("park")
+                }
+
+                createSetupPage("Enjoy learning?", function(state) {
+                    console.log("The answer to the previous question was " + state);
+
+                    if (state) {
+                        likes.append("library");
+                        likes.append("university");
+                        likes.append("book_store");
+                    } else {
+                        dislikes.append("library");
+                        dislikes.append("university");
+                    }
+
+                    createSetupPage("Drink coffee?", function(state) {
+                        console.log("The answer to the previous question was " + state);
+
+                        if (state) {
+                            likes.append("cafe");
+                        }
+
+                        createSetupPage("Familar with this area?", function(state) {
+                            console.log("The answer to the previous question was " + state);
+
+                            if (state) {
+                                
+                            }
+
+                            callback();
+                        });
+                    });
+                });
+            });
         });
     });
 
-    
+    setupSplashPage.addView(setupSplashCard);
+    setupSplashPage.show();
 
 }
 
@@ -285,8 +339,12 @@ function createSetupPage(title, callback) {
             var state = (e.item.title == "Yes") ? true : false;
             callback(state);
         }
-        
+
     });
 
+}
 
+function propogateExclusionList(list)
+{
+    return list;
 }

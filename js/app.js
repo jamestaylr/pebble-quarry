@@ -259,44 +259,62 @@ function createConfig(key, callback) {
                 likes.append("meal_delivery");
             }
 
-            createSetupPage("Like parks?", function(state) {
+            createSetupPage("Enjoy fashion / beauty services?", function(state) {
                 console.log("The answer to the previous question was " + state);
 
                 if (state) {
-                    likes.append("park");
+                    likes.append("beauty_salon");
+                    likes.append("clothing_store");
+                    likes.append("hair_care");
+                    likes.append("jewelry_store");
+                    likes.append("spa");
                 } else {
-                    dislikes.append("park")
+                    dislikes.append("beauty_salon");
+                    dislikes.append("clothing_store");
+                    dislikes.append("hair_care");
+                    dislikes.append("jewelry_store");
+                    dislikes.append("spa");
                 }
 
-                createSetupPage("Enjoy learning?", function(state) {
+                createSetupPage("Like parks?", function(state) {
                     console.log("The answer to the previous question was " + state);
 
                     if (state) {
-                        likes.append("library");
-                        likes.append("university");
-                        likes.append("book_store");
+                        likes.append("park");
                     } else {
-                        dislikes.append("library");
-                        dislikes.append("university");
+                        dislikes.append("park");
                     }
 
-                    createSetupPage("Drink coffee?", function(state) {
+                    createSetupPage("Enjoy learning?", function(state) {
                         console.log("The answer to the previous question was " + state);
 
                         if (state) {
-                            likes.append("cafe");
+                            likes.append("library");
+                            likes.append("university");
+                            likes.append("book_store");
+                        } else {
+                            dislikes.append("library");
+                            dislikes.append("university");
                         }
 
-                        createSetupPage("Familar with this area?", function(state) {
+                        createSetupPage("Drink coffee?", function(state) {
                             console.log("The answer to the previous question was " + state);
 
                             if (state) {
-                                dislikes.append("taxi_stand");
-                                dislikes.append("train_station");
-                                dislikes.append("subway_station");
+                                likes.append("cafe");
                             }
 
-                            callback();
+                            createSetupPage("Familar with this area?", function(state) {
+                                console.log("The answer to the previous question was " + state);
+
+                                if (state) {
+                                    dislikes.append("taxi_stand");
+                                    dislikes.append("train_station");
+                                    dislikes.append("subway_station");
+                                }
+
+                                callback();
+                            });
                         });
                     });
                 });
@@ -345,8 +363,7 @@ function createSetupPage(title, callback) {
 
 }
 
-function propogateExclusionList()
-{
+function propogateExclusionList() {
     list = [];
 
     list.append("synagogue");
@@ -383,6 +400,7 @@ function propogateExclusionList()
     list.append("physiotherapist");
     list.append("travel_agency");
     list.append("police");
+    list.append("laundry");
 
     return list;
 }
